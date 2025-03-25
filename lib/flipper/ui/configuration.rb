@@ -77,6 +77,8 @@ module Flipper
       # Default is false.
       attr_accessor :confirm_disable
 
+      attr_accessor :comparable_properties
+
       VALID_BANNER_CLASS_VALUES = %w(
         danger
         dark
@@ -106,6 +108,7 @@ module Flipper
         @actors_separator = ','
         @confirm_fully_enable = false
         @confirm_disable = true
+        @comparable_properties = []
         @read_only = false
         @nav_items = [
           { title: "Features", href: "features" },

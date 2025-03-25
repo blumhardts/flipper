@@ -101,12 +101,12 @@ module Flipper
     # Returns true if enabled, false if not.
     def enabled?(*actors)
       actors = Array(actors).
-        # Avoids to_ary warning that happens when passing DelegateClass of an 
-        # ActiveRecord object and using flatten here. This is tested in 
+        # Avoids to_ary warning that happens when passing DelegateClass of an
+        # ActiveRecord object and using flatten here. This is tested in
         # spec/flipper/model/active_record_spec.rb.
-        flat_map { |actor| actor.is_a?(Array) ? actor : [actor] }. 
+        flat_map { |actor| actor.is_a?(Array) ? actor : [actor] }.
         # Allows null object pattern. See PR for more. https://github.com/flippercloud/flipper/pull/887
-        reject(&:nil?). 
+        reject(&:nil?).
         map { |actor| Types::Actor.wrap(actor) }
       actors = nil if actors.empty?
 
@@ -346,6 +346,18 @@ module Flipper
     # Returns Integer greater than or equal to 0 and less than or equal to 100.
     def percentage_of_time_value
       gate_values.percentage_of_time
+    end
+
+    def expression_property
+      nil # TODO: implement
+    end
+
+    def expression_comparator
+      nil # TODO: implement
+    end
+
+    def expression_value
+      nil # TODO: implement
     end
 
     # Public: Get the gates that have been enabled for the feature.

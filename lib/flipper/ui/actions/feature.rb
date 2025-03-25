@@ -17,6 +17,9 @@ module Flipper
           @feature.actor_names = Flipper::UI.configuration.actor_names_source.call(@feature.actors_value)
           @page_title = "#{@feature.key} // Features"
           @percentages = [0, 1, 5, 10, 25, 50, 100]
+          @expression_groups = [:Any, :All]
+          @comparable_properties = Flipper::UI.configuration.comparable_properties
+          @comparison_operators = Flipper::Expressions::Comparable.subclasses.map(&:operator)
 
           view_response :feature
         end

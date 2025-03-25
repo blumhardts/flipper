@@ -164,6 +164,109 @@
           </div>
         <% end %>
 
+        <%# Expression %>
+        <div class="js-toggle-container">
+          <div class="card-body border-bottom">
+            <div class="row align-items-center">
+              <div class="col col-me-auto">
+                <h6 class="m-0">
+                  <strong class="<%= "text-muted" unless @feature.expression_value %>">
+                    <% if @feature.expression_value %>
+                      Enabled for actors with <%= @feature.expression_property %> <%= @feature.expression_comparator %> <%= @feature.expression_value %></strong>
+                    <% else %>
+                      No expression enabled
+                    <% end %>
+                  </strong>
+                </h6>
+              </div>
+              <% if write_allowed? %>
+                <div class="col col-auto toggle-block-when-off">
+                  <button class="btn btn-outline-secondary js-toggle-trigger">Edit</button>
+                </div>
+                <div class="col col-auto toggle-block-when-on">
+                  <button class="btn btn-outline-secondary js-toggle-trigger">Hide</button>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <% if write_allowed? %>
+            <div class="card-body border-bottom toggle-block-when-on bg-lightest">
+              <form action="<%= script_name %>/features/<%= Flipper::UI::Util.escape @feature.key %>/expression" method="post" class="col">
+                <%== csrf_input_tag %>
+                <div class="row mb-3">
+                  <div class="col">
+                    <select name="value" class="form-select">
+                      <option value="">Select a property...</option>
+                      <% @comparable_properties.each do |property| %>
+                        <option value="<%= property %>"><%= property %></option>
+                      <% end %>
+                    </select>
+                  </div>
+                  <div class="col col-auto">
+                    <select name="value" class="form-select">
+                      <option value="">Select an operator...</option>
+                      <% @comparison_operators.sort.each do |operator| %>
+                        <option value="<%= operator %>"><%= operator %></option>
+                      <% end %>
+                    </select>
+                  </div>
+                  <div class="col col-auto">
+                    <input type="text" name="value" <% if @feature.expression_value %>value="<%= @feature.expression_value %>"<% end %> title="Value to compare actor property with" placeholder="value" class="form-control">
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col col-auto ms-auto">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <%#= Backup code in case I don't like changes. %>
+            <% if false %>
+            <div class="card-body border-bottom toggle-block-when-on bg-lightest">
+              <form action="<%= script_name %>/features/<%= Flipper::UI::Util.escape @feature.key %>/expression" method="post" class="col">
+                <%== csrf_input_tag %>
+                <div class="row mb-3">
+                  <div class="col">
+                    <select name="value" class="form-select">
+                      <option value="">Select a property...</option>
+                      <% @comparable_properties.each do |property| %>
+                        <option value="<%= property %>"><%= property %></option>
+                      <% end %>
+                    </select>
+                  </div>
+                  <div class="col col-auto">
+                    <select name="value" class="form-select">
+                      <option value="">Select an operator...</option>
+                      <% @comparison_operators.sort.each do |operator| %>
+                        <option value="<%= operator %>"><%= operator %></option>
+                      <% end %>
+                    </select>
+                  </div>
+                  <div class="col col-auto">
+                    <input type="text" name="value" <% if @feature.expression_value %>value="<%= @feature.expression_value %>"<% end %> title="Value to compare actor property with" placeholder="value" class="form-control">
+                  </div>
+                </div>
+                <div class="row align-items-center">
+                  <div class="col col-auto ms-auto">
+                    <div class="text-muted">Group</div>
+                  </div>
+                  <div class="col col-auto">
+                    <div class="btn-group">
+                      <% @expression_groups.each do |group| %>
+                        <button type="button" class="btn btn-light"><%= group %></button>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <% end %>
+          <% end %>
+        </div>
+
         <%# % of Actors %>
         <div class="js-toggle-container">
           <div class="card-body border-bottom">
