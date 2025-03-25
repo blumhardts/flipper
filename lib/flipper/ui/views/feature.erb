@@ -197,8 +197,8 @@
                 <div class="row align-items-center mb-3">
                   <div class="col">
                     <div class="btn-group">
-                      <button type="button" class="btn btn-sm btn-light" data-group-type="any">Any</button>
-                      <button type="button" class="btn btn-sm btn-light" data-group-type="all">All</button>
+                      <button type="button" class="btn btn-sm btn-light js-add-expression-group" data-group-type="any">Any</button>
+                      <button type="button" class="btn btn-sm btn-light js-add-expression-group" data-group-type="all">All</button>
                     </div>
                   </div>
                   <div class="col col-auto ms-auto">
@@ -239,15 +239,19 @@
               </div>
             </template>
 
+            <!-- Template for expression groups -->
             <template id="expression-group">
-              <input type="hidden" name="expressions[][group]" value="">
-              <div class="row align-items-center mb-3">
+              <div class="row mb-3 expression-group">
                 <div class="col">
-                  <div class="fw-bold"></div>
-                </div>
-                <div class="col col-auto ms-auto">
-                  <button type="button" class="btn btn-sm btn-outline-secondary">Add an expression</button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary">Add a group</button>
+                  <div class="row align-items-center">
+                    <div class="col">
+                      <h6 class="m-0"><strong></strong></h6>
+                    </div>
+                    <div class="col-auto ms-auto">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Add an expression</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Add a group</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </template>
