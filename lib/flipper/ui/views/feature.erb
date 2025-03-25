@@ -194,76 +194,63 @@
             <div class="card-body border-bottom toggle-block-when-on bg-lightest">
               <form action="<%= script_name %>/features/<%= Flipper::UI::Util.escape @feature.key %>/expression" method="post" class="col">
                 <%== csrf_input_tag %>
-                <div class="row mb-3">
+                <div class="row align-items-center mb-3">
                   <div class="col">
-                    <select name="value" class="form-select">
-                      <option value="">Select a property...</option>
-                      <% @comparable_properties.each do |property| %>
-                        <option value="<%= property %>"><%= property %></option>
-                      <% end %>
-                    </select>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-light" data-group-type="any">Any</button>
+                      <button type="button" class="btn btn-sm btn-light" data-group-type="all">All</button>
+                    </div>
                   </div>
-                  <div class="col col-auto">
-                    <select name="value" class="form-select">
-                      <option value="">Select an operator...</option>
-                      <% @comparison_operators.sort.each do |operator| %>
-                        <option value="<%= operator %>"><%= operator %></option>
-                      <% end %>
-                    </select>
-                  </div>
-                  <div class="col col-auto">
-                    <input type="text" name="value" <% if @feature.expression_value %>value="<%= @feature.expression_value %>"<% end %> title="Value to compare actor property with" placeholder="value" class="form-control">
+                  <div class="col col-auto ms-auto">
+                    <button type="button" class="btn btn-sm btn-outline-secondary js-add-expression" data-root="true">Add an expression</button>
                   </div>
                 </div>
+                <div class="expressions"></div>
                 <div class="row">
-                  <div class="col col-auto ms-auto">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                  </div>
+                  <div class="col-auto ms-auto"><input type="submit" name="action" value="Save" class="btn btn-primary"></div>
                 </div>
               </form>
             </div>
 
-            <%#= Backup code in case I don't like changes. %>
-            <% if false %>
-            <div class="card-body border-bottom toggle-block-when-on bg-lightest">
-              <form action="<%= script_name %>/features/<%= Flipper::UI::Util.escape @feature.key %>/expression" method="post" class="col">
-                <%== csrf_input_tag %>
-                <div class="row mb-3">
-                  <div class="col">
-                    <select name="value" class="form-select">
-                      <option value="">Select a property...</option>
-                      <% @comparable_properties.each do |property| %>
-                        <option value="<%= property %>"><%= property %></option>
-                      <% end %>
-                    </select>
-                  </div>
-                  <div class="col col-auto">
-                    <select name="value" class="form-select">
-                      <option value="">Select an operator...</option>
-                      <% @comparison_operators.sort.each do |operator| %>
-                        <option value="<%= operator %>"><%= operator %></option>
-                      <% end %>
-                    </select>
-                  </div>
-                  <div class="col col-auto">
-                    <input type="text" name="value" <% if @feature.expression_value %>value="<%= @feature.expression_value %>"<% end %> title="Value to compare actor property with" placeholder="value" class="form-control">
-                  </div>
+            <template id="expression">
+              <div class="row align-items-center mb-3 expression">
+                <div class="col">
+                  <select name="expressions[][property]" class="form-select">
+                    <option value="">Select a property...</option>
+                    <% @comparable_properties.each do |property| %>
+                      <option value="<%= property %>"><%= property %></option>
+                    <% end %>
+                  </select>
                 </div>
-                <div class="row align-items-center">
-                  <div class="col col-auto ms-auto">
-                    <div class="text-muted">Group</div>
-                  </div>
-                  <div class="col col-auto">
-                    <div class="btn-group">
-                      <% @expression_groups.each do |group| %>
-                        <button type="button" class="btn btn-light"><%= group %></button>
-                      <% end %>
-                    </div>
-                  </div>
+                <div class="col col-auto">
+                  <select name="expressions[][operator]" class="form-select">
+                    <option value="">Select an operator...</option>
+                    <% @comparison_operators.sort.each do |operator| %>
+                      <option value="<%= operator %>"><%= operator %></option>
+                    <% end %>
+                  </select>
                 </div>
-              </form>
-            </div>
-            <% end %>
+                <div class="col col-auto">
+                  <input type="text" name="expressions[][value]" title="Value to compare property against" placeholder="value" class="form-control">
+                </div>
+                <div class="col col-auto">
+                  <button type="button" class="btn btn-outline-danger js-remove-expression" data-bs-toggle="tooltip" title="Remove expression" data-bs-placement="left">&#x2717;</button>
+                </div>
+              </div>
+            </template>
+
+            <template id="expression-group">
+              <input type="hidden" name="expressions[][group]" value="">
+              <div class="row align-items-center mb-3">
+                <div class="col">
+                  <div class="fw-bold"></div>
+                </div>
+                <div class="col col-auto ms-auto">
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Add an expression</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Add a group</button>
+                </div>
+              </div>
+            </template>
           <% end %>
         </div>
 
