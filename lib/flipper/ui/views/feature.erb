@@ -222,7 +222,7 @@
             <template id="expression">
               <div class="row align-items-center mb-3 expression">
                 <div class="col">
-                  <select name="expressions[][property]" class="form-select">
+                  <select name="expression[property]" class="form-select">
                     <option value="">Select a property...</option>
                     <% @comparable_properties.each do |property| %>
                       <option value="<%= property %>"><%= property %></option>
@@ -230,15 +230,15 @@
                   </select>
                 </div>
                 <div class="col">
-                  <select name="expressions[][operator]" class="form-select">
+                  <select name="expression[operator]" class="form-select">
                     <option value="">Select an operator...</option>
-                    <% @comparison_operators.sort.each do |operator| %>
+                    <% @comparison_operators.each do |operator| %>
                       <option value="<%= operator %>"><%= operator %></option>
                     <% end %>
                   </select>
                 </div>
                 <div class="col">
-                  <input type="text" name="expressions[][value]" placeholder="value" class="form-control">
+                  <input type="text" name="expression[value]" placeholder="value" class="form-control">
                 </div>
                 <div class="col-auto">
                   <button type="button" class="btn btn-outline-danger js-remove-expression" data-bs-toggle="tooltip" title="Remove expression" data-bs-placement="left">&#x2717;</button>
