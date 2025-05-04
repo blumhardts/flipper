@@ -219,7 +219,7 @@
              <template id="property-expression" data-margin-class="mb-3">
               <div class="row align-items-center property-expression">
                 <div class="col expression-property-control">
-                  <select name="expression[property]" class="form-select js-change-property-expression-property">
+                  <select name="expression[operator][][Property][]" class="form-select js-change-property-expression-property">
                     <option value="" data-type="string">Select a property...</option>
                     <% @comparable_properties.each do |property| %>
                       <option value="<%= property[:name] %>" data-type="<%= property[:type]%>"><%= property[:name] %></option>
@@ -235,34 +235,34 @@
             </template>
 
             <template id="property-expression-default-operator-control">
-              <select name="expression[operator]" class="form-select">
+            <select name="_operator" class="form-select js-change-property-expression-operator">
                 <option value="">Select an operator...</option>
-                <% @comparison_operators.each do |operator| %>
-                  <option value="<%= operator %>"><%= operator %></option>
+                <% @comparators.each do |comparators| %>
+                  <option value="<%= comparators[:name] %>"><%= comparators[:operator] %></option>
                 <% end %>
               </select>
             </template>
 
             <template id="property-expression-string-value-control">
-              <input type="text" name="expression[value]" placeholder="Enter a value..." class="form-control">
+              <input type="text" name="expression[operator][]" placeholder="Enter a value..." class="form-control">
             </template>
 
             <template id="property-expression-boolean-operator-control">
-              <input type="text" name="expression[operator]" class="form-control" value="==" readonly>
+              <input type="text" name="expression[operator]" class="form-control js-change-property-expression-operator" value="==" readonly>
             </template>
 
             <template id="property-expression-boolean-value-control">
               <div class="btn-group">
-                <input type="radio" class="btn-check" name="expression[value]" id="property-expression-boolean-value-control-true" autocomplete="off">
+                <input type="radio" class="btn-check" name="expression[operator][]" id="property-expression-boolean-value-control-true" autocomplete="off">
                 <label class="btn btn-light" for="property-expression-boolean-value-control-true">True</label>
 
-                <input type="radio" class="btn-check" name="expression[value]" id=property-expression-boolean-value-control-false" autocomplete="off">
+                <input type="radio" class="btn-check" name="expression[operator][]" id=property-expression-boolean-value-control-false" autocomplete="off">
                 <label class="btn btn-light" for="propery-expression-boolean-value-control-false">False</label>
               </div>
             </template>
 
             <template id="property-expression-number-value-control">
-              <input type="number" name="expression[value]" placeholder="Enter a number..." class="form-control">
+              <input type="number" name="expression[operator][]" placeholder="Enter a number..." class="form-control">
             </template>
 
             <template id="add-expression-controls" data-margin-class="mb-3">

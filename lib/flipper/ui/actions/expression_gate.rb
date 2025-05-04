@@ -9,6 +9,22 @@ module Flipper
 
         route %r{\A/features/(?<feature_name>.*)/expression/?\Z}
 
+        # {
+        #   "#{Flipper::Expression::Comprable.subclass}": [
+        #     { Property: ["#{property.name}"] },
+        #     value.send(property.type_conversion_method)
+        #   ]
+        # }
+        #
+        # {
+        #   "Any/All": [
+        #     "#{Flipper::Expression::Comprable.subclass}": [
+        #       { Property: ["#{property.name}"] },
+        #       value.send(property.type_conversion_method)
+        #     ]
+        #   ]
+        # }
+        #
         def post
           render_read_only if read_only?
 
