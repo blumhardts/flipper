@@ -196,13 +196,7 @@
                 <%== csrf_input_tag %>
                 <div class="row">
                   <div class="col">
-                    <div class="expressions">
-                      <div class="btn-group expression-controls">
-                        <button type="button" class="btn btn-light js-add-expression">Expression</button>
-                        <button type="button" class="btn btn-light js-add-expression-group" data-group-type="Any">Any</button>
-                        <button type="button" class="btn btn-light js-add-expression-group" data-group-type="All">All</button>
-                      </div>
-                    </div>
+                    <div class="expression"></div>
                   </div>
                   <div class="col-auto ms-auto">
                     <input type="submit" name="action" value="Save" class="btn btn-primary">
@@ -211,79 +205,72 @@
               </form>
             </div>
 
-            <template id="expression-controls">
-              <div class="btn-group expression-controls">
-                <button type="button" class="btn btn-light js-add-expression">Expression</button>
-                <button type="button" class="btn btn-light js-add-expression-group" data-group-type="Any">Any</button>
-                <button type="button" class="btn btn-light js-add-expression-group" data-group-type="All">All</button>
-              </div>
-            </template>
-
-            <template id="expression">
-              <div class="row align-items-center mb-3 expression">
-                <div class="col">
-                  <select name="expression[property]" class="form-select">
-                    <option value="">Select a property...</option>
-                    <% @comparable_properties.each do |property| %>
-                      <option value="<%= property %>"><%= property %></option>
-                    <% end %>
-                  </select>
-                </div>
-                <div class="col">
-                  <select name="expression[operator]" class="form-select">
-                    <option value="">Select an operator...</option>
-                    <% @comparison_operators.each do |operator| %>
-                      <option value="<%= operator %>"><%= operator %></option>
-                    <% end %>
-                  </select>
-                </div>
-                <div class="col">
-                  <input type="text" name="expression[value]" placeholder="value" class="form-control">
-                </div>
-                <div class="col-auto">
-                  <button type="button" class="btn btn-outline-danger js-remove-expression" data-bs-toggle="tooltip" title="Remove expression" data-bs-placement="left">&#x2717;</button>
-                </div>
-              </div>
-            </template>
-
-            <!-- Template for expression groups -->
-            <template id="expression-group">
-              <div class="row align-items-start expression-group">
+            <template id="group-expression">
+              <div class="row align-items-start group-expression">
                 <div class="col-auto">
                   <span class="badge text-bg-secondary"></span>
                 </div>
-                <div class="col expressions">
-                  <div class="row align-items-center mb-3 expression">
-                    <div class="col">
-                      <select name="expressions[][property]" class="form-select">
-                        <option value="">Select a property...</option>
-                        <% @comparable_properties.each do |property| %>
-                          <option value="<%= property %>"><%= property %></option>
-                        <% end %>
-                      </select>
-                    </div>
-                    <div class="col">
-                      <select name="expressions[][operator]" class="form-select">
-                        <option value="">Select an operator...</option>
-                        <% @comparison_operators.sort.each do |operator| %>
-                          <option value="<%= operator %>"><%= operator %></option>
-                        <% end %>
-                      </select>
-                    </div>
-                    <div class="col">
-                      <input type="text" name="expressions[][value]" placeholder="value" class="form-control">
-                    </div>
-                    <div class="col-auto">
-                      <button type="button" class="btn btn-outline-danger js-remove-expression" data-bs-toggle="tooltip" title="Remove expression" data-bs-placement="left">&#x2717;</button>
-                    </div>
-                  </div>
-                  <div class="btn-group mb-3 expression-controls">
-                    <button type="button" class="btn btn-light js-add-expression">Expression</button>
-                    <button type="button" class="btn btn-light js-add-expression-group" data-group-type="Any">Any</button>
-                    <button type="button" class="btn btn-light js-add-expression-group" data-group-type="All">All</button>
-                  </div>
+                <div class="col">
+                  <div class="expressions"></div>
                 </div>
              </div>
+            </template>
+
+             <template id="property-expression" data-margin-class="mb-3">
+              <div class="row align-items-center property-expression">
+                <div class="col expression-property-control">
+                  <select name="expression[property]" class="form-select js-change-property-expression-property">
+                    <option value="" data-type="string">Select a property...</option>
+                    <% @comparable_properties.each do |property| %>
+                      <option value="<%= property[:name] %>" data-type="<%= property[:type]%>"><%= property[:name] %></option>
+                    <% end %>
+                  </select>
+                </div>
+                <div class="col expression-operator-control"></div>
+                <div class="col expression-value-control"></div>
+                <div class="col-auto">
+                  <button type="button" class="btn btn-outline-danger js-remove-property-expression" data-bs-toggle="tooltip" title="Remove expression" data-bs-placement="left">&#x2717;</button>
+                </div>
+              </div>
+            </template>
+
+            <template id="property-expression-default-operator-control">
+              <select name="expression[operator]" class="form-select">
+                <option value="">Select an operator...</option>
+                <% @comparison_operators.each do |operator| %>
+                  <option value="<%= operator %>"><%= operator %></option>
+                <% end %>
+              </select>
+            </template>
+
+            <template id="property-expression-string-value-control">
+              <input type="text" name="expression[value]" placeholder="Enter a value..." class="form-control">
+            </template>
+
+            <template id="property-expression-boolean-operator-control">
+              <input type="text" name="expression[operator]" class="form-control" value="==" readonly>
+            </template>
+
+            <template id="property-expression-boolean-value-control">
+              <div class="btn-group">
+                <input type="radio" class="btn-check" name="expression[value]" id="property-expression-boolean-value-control-true" autocomplete="off">
+                <label class="btn btn-light" for="property-expression-boolean-value-control-true">True</label>
+
+                <input type="radio" class="btn-check" name="expression[value]" id=property-expression-boolean-value-control-false" autocomplete="off">
+                <label class="btn btn-light" for="propery-expression-boolean-value-control-false">False</label>
+              </div>
+            </template>
+
+            <template id="property-expression-number-value-control">
+              <input type="number" name="expression[value]" placeholder="Enter a number..." class="form-control">
+            </template>
+
+            <template id="add-expression-controls" data-margin-class="mb-3">
+              <div class="btn-group add-expression-controls">
+                <button type="button" class="btn btn-light js-add-property-expression">Property</button>
+                <button type="button" class="btn btn-light js-add-group-expression" data-group-type="Any">Any</button>
+                <button type="button" class="btn btn-light js-add-group-expression" data-group-type="All">All</button>
+              </div>
             </template>
           <% end %>
         </div>
