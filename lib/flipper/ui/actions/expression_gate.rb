@@ -9,18 +9,21 @@ module Flipper
 
         route %r{\A/features/(?<feature_name>.*)/expression/?\Z}
 
-        # {
-        #   "#{Flipper::Expression::Comprable.subclass}": [
-        #     { Property: ["#{property.name}"] },
-        #     value.send(property.type_conversion_method)
+        # expression: ["min_client_version", "LessThan", 123]
+        # expression: { Any: ["min_client_version", "LessThan", 123], [is_registered, "Equal", true] }
+        #
+        #{
+        #   "LessThan": [
+        #     { Property: ["min_client_version"] },
+        #     "foobarbaz", 123, true, false
         #   ]
         # }
         #
         # {
         #   "Any/All": [
-        #     "#{Flipper::Expression::Comprable.subclass}": [
-        #       { Property: ["#{property.name}"] },
-        #       value.send(property.type_conversion_method)
+        #     "LessThan": [
+        #       { Property: ["min_client_version"] },
+        #       "foobarbaz", 123, true, false
         #     ]
         #   ]
         # }
