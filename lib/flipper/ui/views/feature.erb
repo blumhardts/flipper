@@ -256,9 +256,9 @@
                 <h6 class="m-0">
                   <strong class="<%= "text-muted" unless @feature.has_expression? %>">
                     <% if @feature.has_expression? %>
-                      Expression: <%= @feature.expression_description %>
+                      Enabled for actors with <%= @feature.expression_description %>
                     <% else %>
-                      No expression set
+                      No expression enabled
                     <% end %>
                   </strong>
                 </h6>
@@ -285,7 +285,7 @@
                   <div class="row g-2">
                     <div class="col-md-4">
                       <select name="expression_property" class="form-select" required>
-                        <option value="">Select property...</option>
+                        <option value="">Select a property...</option>
                         <% Flipper::UI.expression_properties.each do |property, config| %>
                           <option value="<%= property %>"><%= property %></option>
                         <% end %>
@@ -293,7 +293,7 @@
                     </div>
                     <div class="col-md-3">
                       <select name="expression_operator" class="form-select" required>
-                        <option value="">Select operator...</option>
+                        <option value="">Select an operator...</option>
                         <option value="eq">equals (=)</option>
                         <option value="ne">not equal (≠)</option>
                         <option value="gt">greater than (>)</option>
@@ -303,7 +303,7 @@
                       </select>
                     </div>
                     <div class="col-md-3">
-                      <input type="text" name="expression_value" placeholder="Value" class="form-control" required>
+                      <input type="text" name="expression_value" placeholder="value" class="form-control" required>
                     </div>
                     <div class="col-md-2">
                       <input type="submit" value="Save" class="btn btn-primary">
