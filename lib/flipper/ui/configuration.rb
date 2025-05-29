@@ -79,8 +79,8 @@ module Flipper
       attr_accessor :confirm_disable
 
       # Public: Hash of available expression properties for feature flag expressions.
-      # Each key is the property name, each value is a hash with type and optional metadata.
-      # Default is empty hash.
+      # Each key is the property name, each value is a hash with type (boolean, string, number).
+      # Used for UI dropdowns and type conversion. Default is empty hash.
       attr_accessor :expression_properties
 
       VALID_BANNER_CLASS_VALUES = %w(

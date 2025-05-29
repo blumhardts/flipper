@@ -62,113 +62,47 @@ RSpec.describe Flipper::UI::Actions::ExpressionGate do
       end
     end
 
-    context 'with invalid expression parameters' do
-      before do
+
+
+
+
+    context 'with invalid expression that causes exception' do
+      it 'lets exception bubble up' do
         flipper.disable :search
-        post 'features/search/expression',
-             {
-               'operation' => 'enable',
-               'expression_property' => '',
-               'expression_operator' => 'eq',
-               'expression_value' => 'basic',
-               'authenticity_token' => token
-             },
-             'rack.session' => session
-      end
-
-      it 'redirects back to feature with error' do
-        expect(last_response.status).to be(302)
-        expect(last_response.headers['location']).to include('/features/search?error=')
-      end
-    end
-
-    context 'with missing operator' do
-      before do
-        flipper.disable :search
-        post 'features/search/expression',
-             {
-               'operation' => 'enable',
-               'expression_property' => 'plan',
-               'expression_operator' => '',
-               'expression_value' => 'basic',
-               'authenticity_token' => token
-             },
-             'rack.session' => session
-      end
-
-      it 'redirects back to feature with error' do
-        expect(last_response.status).to be(302)
-        expect(last_response.headers['location']).to include('/features/search?error=')
-      end
-    end
-
-    context 'with missing value' do
-      before do
-        flipper.disable :search
-        post 'features/search/expression',
-             {
-               'operation' => 'enable',
-               'expression_property' => 'plan',
-               'expression_operator' => 'eq',
-               'expression_value' => '',
-               'authenticity_token' => token
-             },
-             'rack.session' => session
-      end
-
-      it 'redirects back to feature with error' do
-        expect(last_response.status).to be(302)
-        expect(last_response.headers['location']).to include('/features/search?error=')
-      end
-    end
-
-    context 'with configured properties validation' do
-      before do
-        allow(Flipper::UI.configuration).to receive(:expression_properties).and_return({
-          plan: { type: 'string' },
-          age: { type: 'number' }
-        })
-      end
-
-      context 'with invalid property' do
-        before do
-          flipper.disable :search
-          post 'features/search/expression',
+        expect { post 'features/search/expression',
                {
                  'operation' => 'enable',
-                 'expression_property' => 'invalid_prop',
-                 'expression_operator' => 'eq',
+                 'expression_property' => 'plan',
+                 'expression_operator' => 'invalid_op',
                  'expression_value' => 'basic',
                  'authenticity_token' => token
                },
-               'rack.session' => session
-        end
-
-        it 'redirects back to feature with error' do
-          expect(last_response.status).to be(302)
-          expect(last_response.headers['location']).to include('/features/search?error=')
-          expect(last_response.headers['location']).to include('not+configured')
-        end
+               'rack.session' => session }.to raise_error(ArgumentError, /cannot be converted into an expression/)
       end
+    end
 
-      context 'with invalid operator for property type' do
+    ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'].each do |operator|
+      context "with #{operator} operator" do
         before do
           flipper.disable :search
           post 'features/search/expression',
                {
                  'operation' => 'enable',
                  'expression_property' => 'plan',
-                 'expression_operator' => 'gt',
+                 'expression_operator' => operator,
                  'expression_value' => 'basic',
                  'authenticity_token' => token
                },
                'rack.session' => session
         end
 
-        it 'redirects back to feature with error' do
+        it 'successfully creates expression' do
+          expect(flipper.feature(:search).enabled_gate_names).to include(:expression)
+        end
+
+        it 'redirects back to feature' do
           expect(last_response.status).to be(302)
-          expect(last_response.headers['location']).to include('/features/search?error=')
-          expect(last_response.headers['location']).to include('not+valid')
+          expect(last_response.headers['location']).to eq('/features/search')
         end
       end
     end
@@ -219,6 +153,14 @@ RSpec.describe Flipper::UI::Actions::ExpressionGate do
 
   describe 'expression parameter parsing' do
     let(:action) { described_class.new(flipper, double('request')) }
+
+    before do
+      allow(Flipper::UI.configuration).to receive(:expression_properties).and_return({
+        'age' => { type: 'number' },
+        'premium' => { type: 'boolean' },
+        'plan' => { type: 'string' }
+      })
+    end
 
     it 'supports all comparison operators' do
       operators = {

@@ -1,6 +1,9 @@
 module Flipper
   module UI
     class Configuration
+      # Module for handling expression property configuration and type conversion.
+      # Provides utilities for working with configured expression properties
+      # without complex validation logic.
       module ExpressionProperties
         SUPPORTED_TYPES = %w(boolean string number).freeze
 
@@ -19,17 +22,7 @@ module Flipper
           end
         end
 
-        def self.validate_properties(properties)
-          return if properties.nil? || properties.empty?
 
-          unless properties.is_a?(Hash)
-            raise ArgumentError, "Expression properties must be a hash"
-          end
-
-          properties.each do |name, definition|
-            validate_property(name, definition)
-          end
-        end
 
         def self.type_for(properties, property_name)
           return nil unless properties
@@ -47,50 +40,7 @@ module Flipper
           properties.keys
         end
 
-        def self.valid_property?(properties, property_name)
-          return true if properties.nil? # Backward compatibility
-          return false unless properties.key?(property_name) || properties.key?(property_name.to_sym)
-          true
-        end
 
-        def self.valid_operator?(operator)
-          %w(eq ne gt gte lt lte).include?(operator.to_s)
-        end
-
-        def self.valid_operators_for_type(type)
-          case type.to_s
-          when 'boolean'
-            %w(eq ne)
-          when 'string'
-            %w(eq ne)
-          when 'number'
-            %w(eq ne gt gte lt lte)
-          else
-            []
-          end
-        end
-
-        def self.valid_operator_for_property?(properties, property_name, operator)
-          return true if properties.nil? # Backward compatibility
-          return false unless valid_property?(properties, property_name)
-          return false unless valid_operator?(operator)
-
-          type = type_for(properties, property_name)
-          valid_operators_for_type(type).include?(operator.to_s)
-        end
-
-        def self.validate_value_for_type(value, type)
-          case type.to_s
-          when 'boolean'
-            %w(true false).include?(value.to_s)
-          when 'string'
-            true
-          when 'number'
-            value.to_s.match?(/\A-?\d+(\.\d+)?\z/)
-          else
-            false
-          end
-        end
       end
     end
   end

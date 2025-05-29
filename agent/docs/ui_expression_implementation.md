@@ -1,7 +1,7 @@
 # UI Expression Implementation
 
 ## Overview
-Complete implementation of expression gate support in the Flipper UI, allowing users to create property-based feature flag rules through web forms alongside existing actors, groups, and percentage gates.
+Simplified implementation of expression gate support in the Flipper UI, allowing users to create property-based feature flag rules through web forms alongside existing actors, groups, and percentage gates. Designed for self-hosted internal usage with trust-based validation.
 
 ## Configuration System
 
@@ -10,12 +10,10 @@ Complete implementation of expression gate support in the Flipper UI, allowing u
 - [`lib/flipper/ui.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui.rb) - Added delegation method for accessing configured properties
 
 ### Expression Properties Configuration
-- [`lib/flipper/ui/configuration/expression_properties.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui/configuration/expression_properties.rb) - Complete configuration module with:
-  - Property validation for string/symbol keys  
-  - Type checking (boolean, string, number)
-  - Operator validation (eq, ne, gt, gte, lt, lte)
-  - Value type validation
-  - Backward compatibility for nil properties
+- [`lib/flipper/ui/configuration/expression_properties.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui/configuration/expression_properties.rb) - Simplified configuration module with:
+  - Basic property type lookup (boolean, string, number)
+  - Helper methods for UI dropdown population
+  - Configuration validation for setup errors only
 
 ### Usage Pattern
 ```ruby
@@ -31,13 +29,13 @@ end
 ## Action Handler
 
 ### Expression Gate Action
-- [`lib/flipper/ui/actions/expression_gate.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui/actions/expression_gate.rb) - Complete action handler with:
+- [`lib/flipper/ui/actions/expression_gate.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui/actions/expression_gate.rb) - Simplified action handler with:
   - POST request handling for enabling expressions
   - DELETE request handling for disabling expressions
-  - Form parameter parsing (property, operator, value)
+  - Direct form parameter usage (no validation/stripping)
+  - Type conversion based on configured property types
   - Expression hash building using `Flipper::Expression.build`
-  - Comprehensive validation using configuration module
-  - Error handling with redirect and error messages
+  - Exception bubbling for invalid expressions
   - CSRF protection
 
 ### Route Registration
@@ -64,48 +62,57 @@ end
   - Updated `gates_in_words` to include expression information
   - Helper methods for operator and value formatting
 
-## Form Validation
+## Error Handling
 
-### Backend Validation
-Complete validation system in [`lib/flipper/ui/actions/expression_gate.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui/actions/expression_gate.rb#L48-L76):
-- Property existence validation against configured properties
-- Operator support validation (eq, ne, gt, gte, lt, lte)
-- Value type validation matching property types
-- Descriptive error messages for validation failures
+### Trust-Based Approach
+Simplified error handling in [`lib/flipper/ui/actions/expression_gate.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui/actions/expression_gate.rb):
+- No frontend form validation (trusts HTML dropdowns)
+- Direct use of form parameters without validation
+- Core Flipper library handles expression validation
+- Invalid expressions cause runtime exceptions (acceptable for internal usage)
 
-### Error Handling
-- Validation errors redirect to feature page with error parameter
-- Error messages displayed in feature view following existing patterns
-- Graceful handling of unconfigured properties for backward compatibility
+### Exception Management
+- `Flipper::Expression.build` exceptions bubble up naturally
+- Server errors for malformed expressions (acceptable security risk)
+- No custom error messages or redirects for validation failures
 
 ## Test Coverage
 
-### Comprehensive Test Suite
-- [`spec/flipper/ui/actions/expression_gate_spec.rb`](file:///Users/samblumhardt/Developer/flipper/spec/flipper/ui/actions/expression_gate_spec.rb) - Complete action tests
-- [`spec/flipper/ui/configuration/expression_properties_spec.rb`](file:///Users/samblumhardt/Developer/flipper/spec/flipper/ui/configuration/expression_properties_spec.rb) - Configuration validation tests
+### Focused Test Suite
+- [`spec/flipper/ui/actions/expression_gate_spec.rb`](file:///Users/samblumhardt/Developer/flipper/spec/flipper/ui/actions/expression_gate_spec.rb) - Action functionality and operator validation tests
+- [`spec/flipper/ui/configuration/expression_properties_spec.rb`](file:///Users/samblumhardt/Developer/flipper/spec/flipper/ui/configuration/expression_properties_spec.rb) - Configuration setup validation tests
 - [`spec/flipper/ui/decorators/feature_spec.rb`](file:///Users/samblumhardt/Developer/flipper/spec/flipper/ui/decorators/feature_spec.rb) - Decorator method tests
-- All tests passing with full coverage of success and error scenarios
+- Tests focus on core functionality and HTML operator validation rather than complex error scenarios
 
 ## Key Features
 
 ### Property-Based Expressions
 - Support for boolean, string, and number property types
 - All comparison operators: eq, ne, gt, gte, lt, lte
-- Type-aware validation and value conversion
+- Type-aware value conversion based on configuration
 
 ### User Experience
 - Human-readable expression display (e.g., "age ≥ 21", "plan equals 'basic'")
 - Consistent UI patterns matching existing gate types
 - Toggle forms for adding/editing expressions
-- Clear error messaging for validation failures
+- Runtime errors for invalid expressions (acceptable for internal usage)
 
 ### Technical Implementation
 - Bootstrap-only styling, no custom CSS
 - Reuses existing Flipper Expression classes and evaluation logic
 - Follows established UI patterns and conventions
-- Maintains backward compatibility with existing installations
+- Trust-based approach suitable for self-hosted internal tools
+
+## Simplification Benefits
+- **Reduced Complexity**: ~170 lines of validation code removed
+- **Cleaner Codebase**: Focus on core functionality, not edge cases
+- **Better Performance**: Less validation overhead
+- **Easier Maintenance**: Fewer code paths and test scenarios
+- **Clear Trade-offs**: Empty dropdowns and runtime errors are acceptable risks
 
 ## Current Limitations
 - Phase 1: Simple property comparisons only (no nested expressions)
 - Phase 1: Creation only (no inline editing of existing expressions)
+- Empty `expression_properties` results in empty dropdowns
+- Invalid expressions cause server exceptions rather than friendly errors
 - Future enhancements documented for nested logical expressions (all/any) and editing capabilities
