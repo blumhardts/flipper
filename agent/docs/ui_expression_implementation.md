@@ -10,10 +10,8 @@ Simplified implementation of expression gate support in the Flipper UI, allowing
 - [`lib/flipper/ui.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui.rb) - Added delegation method for accessing configured properties
 
 ### Expression Properties Configuration
-- [`lib/flipper/ui/configuration/expression_properties.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui/configuration/expression_properties.rb) - Simplified configuration module with:
-  - Basic property type lookup (boolean, string, number)
-  - Helper methods for UI dropdown population
-  - Configuration validation for setup errors only
+- **Removed** - Configuration logic has been inlined into the action handler for simplicity
+- Property type lookup is now handled directly in [`lib/flipper/ui/actions/expression_gate.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui/actions/expression_gate.rb)
 
 ### Usage Pattern
 ```ruby
@@ -32,7 +30,9 @@ end
 - [`lib/flipper/ui/actions/expression_gate.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui/actions/expression_gate.rb) - Simplified action handler with:
   - POST request handling for enabling expressions
   - DELETE request handling for disabling expressions
-  - Direct form parameter usage (no validation/stripping)
+  - Parameter sanitization with `.to_s.strip` following UI conventions
+  - Constant operator mapping to expression class names for maintainability
+  - Inlined property type lookup with `property_type_for` method
   - Type conversion based on configured property types
   - Expression hash building using `Flipper::Expression.build`
   - Exception bubbling for invalid expressions
@@ -67,7 +67,7 @@ end
 ### Trust-Based Approach
 Simplified error handling in [`lib/flipper/ui/actions/expression_gate.rb`](file:///Users/samblumhardt/Developer/flipper/lib/flipper/ui/actions/expression_gate.rb):
 - No frontend form validation (trusts HTML dropdowns)
-- Direct use of form parameters without validation
+- Basic parameter sanitization with `.to_s.strip` but no validation
 - Core Flipper library handles expression validation
 - Invalid expressions cause runtime exceptions (acceptable for internal usage)
 
@@ -80,8 +80,8 @@ Simplified error handling in [`lib/flipper/ui/actions/expression_gate.rb`](file:
 
 ### Focused Test Suite
 - [`spec/flipper/ui/actions/expression_gate_spec.rb`](file:///Users/samblumhardt/Developer/flipper/spec/flipper/ui/actions/expression_gate_spec.rb) - Action functionality and operator validation tests
-- [`spec/flipper/ui/configuration/expression_properties_spec.rb`](file:///Users/samblumhardt/Developer/flipper/spec/flipper/ui/configuration/expression_properties_spec.rb) - Configuration setup validation tests
 - [`spec/flipper/ui/decorators/feature_spec.rb`](file:///Users/samblumhardt/Developer/flipper/spec/flipper/ui/decorators/feature_spec.rb) - Decorator method tests
+- **Removed** - Configuration tests are no longer needed since module was removed
 - Tests focus on core functionality and HTML operator validation rather than complex error scenarios
 
 ## Key Features
@@ -104,10 +104,11 @@ Simplified error handling in [`lib/flipper/ui/actions/expression_gate.rb`](file:
 - Trust-based approach suitable for self-hosted internal tools
 
 ## Simplification Benefits
-- **Reduced Complexity**: ~170 lines of validation code removed
+- **Reduced Complexity**: ~170 lines of validation code removed, entire module eliminated
 - **Cleaner Codebase**: Focus on core functionality, not edge cases
-- **Better Performance**: Less validation overhead
-- **Easier Maintenance**: Fewer code paths and test scenarios
+- **Better Performance**: Less validation overhead, no separate module loading
+- **Easier Maintenance**: Fewer code paths, test scenarios, and files to maintain
+- **Better Locality**: Type logic co-located with usage in action handler
 - **Clear Trade-offs**: Empty dropdowns and runtime errors are acceptable risks
 
 ## Current Limitations

@@ -57,7 +57,7 @@ module Flipper
           end
 
           if has_expression?
-            statuses << "expression: #{expression_summary}"
+            statuses << "actors with #{expression_summary}"
           end
 
           Util.to_sentence(statuses)

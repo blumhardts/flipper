@@ -256,9 +256,9 @@
                 <h6 class="m-0">
                   <strong class="<%= "text-muted" unless @feature.has_expression? %>">
                     <% if @feature.has_expression? %>
-                      Expression: <%= @feature.expression_description %>
+                      Enabled for actors with <%= @feature.expression_description %>
                     <% else %>
-                      No expression set
+                      No expression enabled
                     <% end %>
                   </strong>
                 </h6>
