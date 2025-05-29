@@ -94,7 +94,7 @@ module Flipper
 
         # Public: Check if feature has an expression gate enabled.
         def has_expression?
-          feature.expression_value && !feature.expression_value.empty?
+          feature.expression_value && !feature.expression_value.empty? ? true : false
         end
 
         # Public: Returns the state for just the expression gate.

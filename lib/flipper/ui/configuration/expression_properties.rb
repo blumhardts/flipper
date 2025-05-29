@@ -32,9 +32,12 @@ module Flipper
         end
 
         def self.type_for(properties, property_name)
-          return nil unless properties&.key?(property_name)
+          return nil unless properties
 
-          definition = properties[property_name]
+          # Try string key first, then symbol key
+          definition = properties[property_name] || properties[property_name.to_sym]
+          return nil unless definition
+
           definition[:type] || definition['type']
         end
 
@@ -45,7 +48,8 @@ module Flipper
         end
 
         def self.valid_property?(properties, property_name)
-          return false unless properties&.key?(property_name)
+          return true if properties.nil? # Backward compatibility
+          return false unless properties.key?(property_name) || properties.key?(property_name.to_sym)
           true
         end
 
@@ -67,6 +71,7 @@ module Flipper
         end
 
         def self.valid_operator_for_property?(properties, property_name, operator)
+          return true if properties.nil? # Backward compatibility
           return false unless valid_property?(properties, property_name)
           return false unless valid_operator?(operator)
 
