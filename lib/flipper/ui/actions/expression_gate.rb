@@ -1,7 +1,6 @@
 require 'flipper/ui/action'
 require 'flipper/ui/decorators/feature'
 require 'flipper/ui/util'
-require 'flipper/ui/configuration/expression_properties'
 
 module Flipper
   module UI
@@ -54,8 +53,7 @@ module Flipper
           value = params['expression_value'].to_s.strip
 
           # Convert value to appropriate type based on property type (if configured)
-          properties = UI.configuration.expression_properties
-          property_type = UI::Configuration::ExpressionProperties.type_for(properties, property)
+          property_type = property_type_for(property)
 
           parsed_value = case property_type
           when 'boolean'
@@ -76,6 +74,17 @@ module Flipper
               parsed_value
             ]
           }
+        end
+
+        def property_type_for(property_name)
+          properties = UI.configuration.expression_properties
+          return nil unless properties
+
+          # Try string key first, then symbol key
+          definition = properties[property_name] || properties[property_name.to_sym]
+          return nil unless definition
+
+          definition[:type] || definition['type']
         end
       end
     end

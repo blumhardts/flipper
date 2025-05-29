@@ -1,5 +1,5 @@
 require 'flipper/ui/configuration/option'
-require 'flipper/ui/configuration/expression_properties'
+
 
 module Flipper
   module UI
