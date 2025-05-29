@@ -36,15 +36,6 @@ module Flipper
           redirect_to("/features/#{Flipper::UI::Util.escape feature.key}")
         end
 
-        def delete
-          render_read_only if read_only?
-
-          feature = flipper[feature_name]
-          feature.disable_expression
-
-          redirect_to("/features/#{Flipper::UI::Util.escape feature.key}")
-        end
-
         private
 
         def parse_expression_params

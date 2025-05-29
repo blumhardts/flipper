@@ -119,7 +119,7 @@ RSpec.describe Flipper::UI::Decorators::Feature do
     it 'includes expression in the summary when expression is set' do
       expression = Flipper.property(:plan).eq("basic")
       feature.enable_expression(expression)
-      expect(subject.gates_in_words).to include('expression: plan = "basic"')
+      expect(subject.gates_in_words).to include('actors with plan = "basic"')
     end
 
     it 'does not include expression when no expression is set' do

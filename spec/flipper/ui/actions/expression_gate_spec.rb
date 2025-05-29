@@ -132,24 +132,7 @@ RSpec.describe Flipper::UI::Actions::ExpressionGate do
     end
   end
 
-  describe 'DELETE /features/:feature/expression' do
-    before do
-      expression = Flipper::Expression.build({ "Equal" => [{ "Property" => ["plan"] }, "basic"] })
-      flipper.enable_expression :search, expression
-      delete 'features/search/expression',
-             { 'authenticity_token' => token },
-             'rack.session' => session
-    end
 
-    it 'disables the expression gate' do
-      expect(flipper.feature(:search).enabled_gate_names).not_to include(:expression)
-    end
-
-    it 'redirects back to feature' do
-      expect(last_response.status).to be(302)
-      expect(last_response.headers['location']).to eq('/features/search')
-    end
-  end
 
   describe 'expression parameter parsing' do
     let(:action) { described_class.new(flipper, double('request')) }
