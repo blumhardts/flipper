@@ -247,6 +247,84 @@
         </div>
       <% end %>
 
+      <%# Expression Gate %>
+      <% unless @feature.boolean_value %>
+        <div class="js-toggle-container">
+          <div class="card-body border-bottom">
+            <div class="row align-items-center">
+              <div class="col col-me-auto">
+                <h6 class="m-0">
+                  <strong class="<%= "text-muted" unless @feature.has_expression? %>">
+                    <% if @feature.has_expression? %>
+                      Expression: <%= @feature.expression_description %>
+                    <% else %>
+                      No expression set
+                    <% end %>
+                  </strong>
+                </h6>
+              </div>
+              <% if write_allowed? %>
+                <div class="col col-auto toggle-block-when-off">
+                  <button class="btn btn-outline-secondary js-toggle-trigger">
+                    <%= @feature.has_expression? ? "Edit" : "Add expression" %>
+                  </button>
+                </div>
+                <div class="col col-auto toggle-block-when-on">
+                  <button class="btn btn-outline-secondary js-toggle-trigger">Hide</button>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <% if write_allowed? %>
+            <div class="card-body border-bottom toggle-block-when-on bg-lightest">
+              <div class="row align-items-center">
+                <form action="<%= script_name %>/features/<%= Flipper::UI::Util.escape @feature.key %>/expression" method="post" class="col">
+                  <%== csrf_input_tag %>
+                  <input type="hidden" name="operation" value="enable">
+                  <div class="row g-2">
+                    <div class="col-md-4">
+                      <select name="expression_property" class="form-select" required>
+                        <option value="">Select property...</option>
+                        <% Flipper::UI.expression_properties.each do |property, config| %>
+                          <option value="<%= property %>"><%= property %></option>
+                        <% end %>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <select name="expression_operator" class="form-select" required>
+                        <option value="">Select operator...</option>
+                        <option value="eq">equals (=)</option>
+                        <option value="ne">not equal (≠)</option>
+                        <option value="gt">greater than (>)</option>
+                        <option value="gte">greater than or equal (≥)</option>
+                        <option value="lt">less than (<)</option>
+                        <option value="lte">less than or equal (≤)</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <input type="text" name="expression_value" placeholder="Value" class="form-control" required>
+                    </div>
+                    <div class="col-md-2">
+                      <input type="submit" value="Save" class="btn btn-primary">
+                    </div>
+                  </div>
+                </form>
+                <% if @feature.has_expression? %>
+                  <form action="<%= script_name %>/features/<%= Flipper::UI::Util.escape @feature.key %>/expression" method="post" class="col-auto">
+                    <%== csrf_input_tag %>
+                    <input type="hidden" name="operation" value="disable">
+                    <button type="submit" class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Remove expression" data-bs-placement="left">
+                      Remove
+                    </button>
+                  </form>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
       <% if write_allowed? %>
         <div class="card-body">
           <form action="<%= script_name %>/features/<%= Flipper::UI::Util.escape @feature.key %>/boolean" method="post">

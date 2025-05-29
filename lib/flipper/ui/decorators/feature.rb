@@ -56,6 +56,10 @@ module Flipper
             statuses << "#{feature.percentage_of_time_value}% of time"
           end
 
+          if has_expression?
+            statuses << "expression: #{expression_summary}"
+          end
+
           Util.to_sentence(statuses)
         end
 
@@ -85,6 +89,102 @@ module Flipper
             key <=> other.key
           else
             StateSortMap[state] <=> StateSortMap[other.state]
+          end
+        end
+
+        # Public: Check if feature has an expression gate enabled.
+        def has_expression?
+          feature.expression_value && !feature.expression_value.empty?
+        end
+
+        # Public: Returns the state for just the expression gate.
+        def expression_state
+          has_expression? ? :conditional : :off
+        end
+
+        # Public: Get human-readable summary of the expression.
+        def expression_summary
+          return "none" unless has_expression?
+
+          expr_value = feature.expression_value
+          return "invalid" unless expr_value.is_a?(Hash)
+
+          # Handle simple comparison expressions like {"Equal": [{"Property": ["plan"]}, "basic"]}
+          expr_value.each do |operator, args|
+            next unless args.is_a?(Array) && args.length == 2
+
+            property_part = args[0]
+            value_part = args[1]
+
+            if property_part.is_a?(Hash) && property_part.has_key?("Property")
+              property_name = property_part["Property"]&.first
+              if property_name && value_part
+                operator_text = format_operator(operator)
+                return "#{property_name} #{operator_text} #{format_value(value_part)}"
+              end
+            end
+          end
+
+          "complex expression"
+        end
+
+        # Public: Get detailed human-readable description of the expression.
+        def expression_description
+          return "No expression set" unless has_expression?
+
+          expr_value = feature.expression_value
+          return "Invalid expression format" unless expr_value.is_a?(Hash)
+
+          # Handle simple comparison expressions
+          expr_value.each do |operator, args|
+            next unless args.is_a?(Array) && args.length == 2
+
+            property_part = args[0]
+            value_part = args[1]
+
+            if property_part.is_a?(Hash) && property_part.has_key?("Property")
+              property_name = property_part["Property"]&.first
+              if property_name && value_part
+                operator_text = format_operator_verbose(operator)
+                return "#{property_name} #{operator_text} #{format_value(value_part)}"
+              end
+            end
+          end
+
+          "Complex expression - #{expr_value.inspect}"
+        end
+
+        private
+
+        def format_operator(operator)
+          case operator
+          when "Equal" then "="
+          when "NotEqual" then "≠"
+          when "GreaterThan" then ">"
+          when "GreaterThanOrEqualTo" then "≥"
+          when "LessThan" then "<"
+          when "LessThanOrEqualTo" then "≤"
+          else operator.downcase
+          end
+        end
+
+        def format_operator_verbose(operator)
+          case operator
+          when "Equal" then "equals"
+          when "NotEqual" then "does not equal"
+          when "GreaterThan" then "is greater than"
+          when "GreaterThanOrEqualTo" then "is greater than or equal to"
+          when "LessThan" then "is less than"
+          when "LessThanOrEqualTo" then "is less than or equal to"
+          else operator.downcase
+          end
+        end
+
+        def format_value(value)
+          case value
+          when String then "\"#{value}\""
+          when true, false then value.to_s
+          else value.to_s
           end
         end
       end
