@@ -11,6 +11,16 @@ module Flipper
 
         route %r{\A/features/(?<feature_name>.*)/expression/?\Z}
 
+        # Map form operators to expression class names using dynamic lookup
+        OPERATOR_MAPPING = {
+          'eq' => 'Equal',
+          'ne' => 'NotEqual',
+          'gt' => 'GreaterThan',
+          'gte' => 'GreaterThanOrEqualTo',
+          'lt' => 'LessThan',
+          'lte' => 'LessThanOrEqualTo'
+        }.freeze
+
         def post
           render_read_only if read_only?
 
@@ -38,12 +48,10 @@ module Flipper
 
         private
 
-
-
         def parse_expression_params
-          property = params['expression_property']
-          operator = params['expression_operator']
-          value = params['expression_value']
+          property = params['expression_property'].to_s.strip
+          operator = params['expression_operator'].to_s.strip
+          value = params['expression_value'].to_s.strip
 
           # Convert value to appropriate type based on property type (if configured)
           properties = UI.configuration.expression_properties
@@ -58,17 +66,8 @@ module Flipper
             value
           end
 
-          # Map operator to expression type
-          operator_mapping = {
-            'eq' => 'Equal',
-            'ne' => 'NotEqual',
-            'gt' => 'GreaterThan',
-            'gte' => 'GreaterThanOrEqualTo',
-            'lt' => 'LessThan',
-            'lte' => 'LessThanOrEqualTo'
-          }
-
-          expression_type = operator_mapping[operator]
+          # Map operator to expression type using dynamic lookup
+          expression_type = OPERATOR_MAPPING[operator]
 
           # Build expression hash in the format: {"Equal": [{"Property": ["plan"]}, "basic"]}
           {
