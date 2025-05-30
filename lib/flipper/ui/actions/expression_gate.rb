@@ -52,19 +52,8 @@ module Flipper
           operator = params['expression_operator'].to_s.strip
           value = params['expression_value'].to_s.strip
 
-          # Convert value to appropriate type based on property type (if configured)
-          property_type = property_type_for(property)
-
-          parsed_value = case property_type
-          when 'boolean'
-            value == 'true'
-          when 'number'
-            value.include?('.') ? value.to_f : value.to_i
-          else # string or unknown property
-            value
-          end
-
-          # Map operator to expression type using dynamic lookup
+          # Convert value to appropriate type and map operator
+          parsed_value = convert_value_to_type(value, property)
           expression_type = OPERATOR_MAPPING[operator]
 
           # Build expression hash in the format: {"Equal": [{"Property": ["plan"]}, "basic"]}
@@ -89,18 +78,8 @@ module Flipper
 
             next if property.empty? || operator.empty? || value.empty?
 
-            # Convert value to appropriate type
-            property_type = property_type_for(property)
-            parsed_value = case property_type
-            when 'boolean'
-              value == 'true'
-            when 'number'
-              value.include?('.') ? value.to_f : value.to_i
-            else
-              value
-            end
-
-            # Map operator to expression type
+            # Convert value to appropriate type and map operator
+            parsed_value = convert_value_to_type(value, property)
             expression_type = OPERATOR_MAPPING[operator]
 
             # Build individual expression
@@ -120,6 +99,19 @@ module Flipper
             { "All" => expressions }
           else
             raise "Unknown complex expression type: #{complex_type}"
+          end
+        end
+
+        def convert_value_to_type(value, property)
+          property_type = property_type_for(property)
+
+          case property_type
+          when 'boolean'
+            value == 'true'
+          when 'number'
+            value.include?('.') ? value.to_f : value.to_i
+          else # string or unknown property
+            value
           end
         end
 
