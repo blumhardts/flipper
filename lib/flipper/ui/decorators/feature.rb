@@ -104,10 +104,56 @@ module Flipper
 
         # Public: Get human-readable summary of the expression.
         def expression_summary
+          result = nil
+          parse_simple_expression do |property_name, operator, value_part|
+            operator_text = format_operator(operator)
+            result = "#{property_name} #{operator_text} #{format_value(value_part)}"
+          end
+
+          return result if result
           return "none" unless has_expression?
+          "complex expression"
+        end
+
+        # Public: Get detailed human-readable description of the expression.
+        def expression_description
+          result = nil
+          parse_simple_expression do |property_name, operator, value_part|
+            operator_text = format_operator_verbose(operator)
+            result = "#{property_name} #{operator_text} #{format_value(value_part)}"
+          end
+
+          return result if result
+          return "No expression set" unless has_expression?
+          expr_value = feature.expression_value
+          return "Invalid expression format" unless expr_value.is_a?(Hash)
+          "Complex expression - #{expr_value.inspect}"
+        end
+
+        # Public: Extract form values from current expression for editing.
+        # Returns hash with property, operator, and value, or empty hash for complex expressions.
+        def expression_form_values
+          parse_simple_expression do |property_name, operator, value_part|
+            form_operator = map_expression_operator_to_form(operator)
+            return {
+              property: property_name,
+              operator: form_operator,
+              value: value_part.to_s
+            }
+          end
+
+          {}
+        end
+
+        private
+
+        # Parse simple expression and yield property name, operator, and value if found.
+        # Returns early from block if simple expression is found, otherwise continues execution.
+        def parse_simple_expression
+          return unless has_expression?
 
           expr_value = feature.expression_value
-          return "invalid" unless expr_value.is_a?(Hash)
+          return unless expr_value.is_a?(Hash)
 
           # Handle simple comparison expressions like {"Equal": [{"Property": ["plan"]}, "basic"]}
           expr_value.each do |operator, args|
@@ -118,43 +164,12 @@ module Flipper
 
             if property_part.is_a?(Hash) && property_part.has_key?("Property")
               property_name = property_part["Property"]&.first
-              if property_name && value_part
-                operator_text = format_operator(operator)
-                return "#{property_name} #{operator_text} #{format_value(value_part)}"
+              if property_name && !value_part.nil?
+                yield property_name, operator, value_part
               end
             end
           end
-
-          "complex expression"
         end
-
-        # Public: Get detailed human-readable description of the expression.
-        def expression_description
-          return "No expression set" unless has_expression?
-
-          expr_value = feature.expression_value
-          return "Invalid expression format" unless expr_value.is_a?(Hash)
-
-          # Handle simple comparison expressions
-          expr_value.each do |operator, args|
-            next unless args.is_a?(Array) && args.length == 2
-
-            property_part = args[0]
-            value_part = args[1]
-
-            if property_part.is_a?(Hash) && property_part.has_key?("Property")
-              property_name = property_part["Property"]&.first
-              if property_name && value_part
-                operator_text = format_operator_verbose(operator)
-                return "#{property_name} #{operator_text} #{format_value(value_part)}"
-              end
-            end
-          end
-
-          "Complex expression - #{expr_value.inspect}"
-        end
-
-        private
 
         def format_operator(operator)
           case operator
@@ -185,6 +200,18 @@ module Flipper
           when String then "\"#{value}\""
           when true, false then value.to_s
           else value.to_s
+          end
+        end
+
+        def map_expression_operator_to_form(operator)
+          case operator
+          when "Equal" then "eq"
+          when "NotEqual" then "ne"
+          when "GreaterThan" then "gt"
+          when "GreaterThanOrEqualTo" then "gte"
+          when "LessThan" then "lt"
+          when "LessThanOrEqualTo" then "lte"
+          else "eq" # Default fallback
           end
         end
       end

@@ -282,28 +282,32 @@
                 <form action="<%= script_name %>/features/<%= Flipper::UI::Util.escape @feature.key %>/expression" method="post" class="col">
                   <%== csrf_input_tag %>
                   <input type="hidden" name="operation" value="enable">
+                  <% form_values = @feature.expression_form_values %>
                   <div class="row">
                     <div class="col-md-4">
                       <select name="expression_property" class="form-select" required>
                         <option value="">Select a property...</option>
                         <% Flipper::UI.expression_properties.each do |property, config| %>
-                          <option value="<%= property %>"><%= property %></option>
+                          <option value="<%= property %>" <%= "selected" if form_values[:property] == property.to_s %>><%= property %></option>
+                        <% end %>
+                        <% if form_values[:property] && !Flipper::UI.expression_properties.has_key?(form_values[:property].to_sym) %>
+                          <option value="<%= form_values[:property] %>" selected><%= form_values[:property] %> (no longer available)</option>
                         <% end %>
                       </select>
                     </div>
                     <div class="col-md-3">
                       <select name="expression_operator" class="form-select" required>
                         <option value="">Select an operator...</option>
-                        <option value="eq">equals (=)</option>
-                        <option value="ne">not equal (≠)</option>
-                        <option value="gt">greater than (>)</option>
-                        <option value="gte">greater than or equal (≥)</option>
-                        <option value="lt">less than (<)</option>
-                        <option value="lte">less than or equal (≤)</option>
+                        <option value="eq" <%= "selected" if form_values[:operator] == "eq" %>>equals (=)</option>
+                        <option value="ne" <%= "selected" if form_values[:operator] == "ne" %>>not equal (≠)</option>
+                        <option value="gt" <%= "selected" if form_values[:operator] == "gt" %>>greater than (>)</option>
+                        <option value="gte" <%= "selected" if form_values[:operator] == "gte" %>>greater than or equal (≥)</option>
+                        <option value="lt" <%= "selected" if form_values[:operator] == "lt" %>>less than (<)</option>
+                        <option value="lte" <%= "selected" if form_values[:operator] == "lte" %>>less than or equal (≤)</option>
                       </select>
                     </div>
                     <div class="col-md-3">
-                      <input type="text" name="expression_value" placeholder="value" class="form-control" required>
+                      <input type="text" name="expression_value" placeholder="value" class="form-control" value="<%= form_values[:value] %>" required>
                     </div>
                     <div class="col-auto ms-auto">
                       <input type="submit" value="Save" class="btn btn-primary">

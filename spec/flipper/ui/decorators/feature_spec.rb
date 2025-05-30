@@ -171,4 +171,164 @@ RSpec.describe Flipper::UI::Decorators::Feature do
       expect((expression_feature <=> off_feature)).to be(-1)
     end
   end
+
+  describe '#expression_form_values' do
+    context 'when no expression is set' do
+      it 'returns empty hash' do
+        expect(subject.expression_form_values).to eq({})
+      end
+    end
+
+    context 'when simple expression is set' do
+      it 'returns form values for Equal operator' do
+        expression = Flipper.property(:user_id).eq("123")
+        feature.enable_expression(expression)
+        expect(subject.expression_form_values).to eq({
+          property: "user_id",
+          operator: "eq",
+          value: "123"
+        })
+      end
+
+      it 'returns form values for NotEqual operator' do
+        expression = Flipper.property(:plan).neq("premium")
+        feature.enable_expression(expression)
+        expect(subject.expression_form_values).to eq({
+          property: "plan",
+          operator: "ne",
+          value: "premium"
+        })
+      end
+
+      it 'returns form values for GreaterThan operator' do
+        expression = Flipper.property(:age).gt(21)
+        feature.enable_expression(expression)
+        expect(subject.expression_form_values).to eq({
+          property: "age",
+          operator: "gt",
+          value: "21"
+        })
+      end
+
+      it 'returns form values for GreaterThanOrEqualTo operator' do
+        expression = Flipper.property(:score).gte(100)
+        feature.enable_expression(expression)
+        expect(subject.expression_form_values).to eq({
+          property: "score",
+          operator: "gte",
+          value: "100"
+        })
+      end
+
+      it 'returns form values for LessThan operator' do
+        expression = Flipper.property(:count).lt(5)
+        feature.enable_expression(expression)
+        expect(subject.expression_form_values).to eq({
+          property: "count",
+          operator: "lt",
+          value: "5"
+        })
+      end
+
+      it 'returns form values for LessThanOrEqualTo operator' do
+        expression = Flipper.property(:limit).lte(10)
+        feature.enable_expression(expression)
+        expect(subject.expression_form_values).to eq({
+          property: "limit",
+          operator: "lte",
+          value: "10"
+        })
+      end
+
+      it 'returns form values for boolean true value' do
+        expression = Flipper.property(:premium).eq(true)
+        feature.enable_expression(expression)
+        expect(subject.expression_form_values).to eq({
+          property: "premium",
+          operator: "eq",
+          value: "true"
+        })
+      end
+
+      it 'returns form values for boolean false value' do
+        expression = Flipper.property(:premium).eq(false)
+        feature.enable_expression(expression)
+        expect(subject.expression_form_values).to eq({
+          property: "premium",
+          operator: "eq",
+          value: "false"
+        })
+      end
+
+      it 'returns form values for float value' do
+        expression = Flipper.property(:rating).gt(4.5)
+        feature.enable_expression(expression)
+        expect(subject.expression_form_values).to eq({
+          property: "rating",
+          operator: "gt",
+          value: "4.5"
+        })
+      end
+    end
+
+    context 'when complex expression is set' do
+      it 'returns empty hash for Any expression' do
+        expression = Flipper.any([
+          Flipper.property(:user_id).eq("123"),
+          Flipper.property(:premium).eq(true)
+        ])
+        feature.enable_expression(expression)
+        expect(subject.expression_form_values).to eq({})
+      end
+
+      it 'returns empty hash for All expression' do
+        expression = Flipper.all([
+          Flipper.property(:age).gte(21),
+          Flipper.property(:country).eq("US")
+        ])
+        feature.enable_expression(expression)
+        expect(subject.expression_form_values).to eq({})
+      end
+    end
+
+    context 'when expression has invalid format' do
+      it 'returns empty hash for non-hash expression value' do
+        allow(feature).to receive(:expression_value).and_return("invalid")
+        expect(subject.expression_form_values).to eq({})
+      end
+
+      it 'returns empty hash for malformed expression structure' do
+        allow(feature).to receive(:expression_value).and_return({
+          "Equal" => ["not_array_of_two"]
+        })
+        expect(subject.expression_form_values).to eq({})
+      end
+
+      it 'returns empty hash for expression without Property key' do
+        allow(feature).to receive(:expression_value).and_return({
+          "Equal" => [
+            { "NotProperty" => ["plan"] },
+            "basic"
+          ]
+        })
+        expect(subject.expression_form_values).to eq({})
+      end
+    end
+
+    context 'when expression has unknown operator' do
+      it 'returns eq as default operator' do
+        allow(feature).to receive(:expression_value).and_return({
+          "UnknownOperator" => [
+            { "Property" => ["plan"] },
+            "basic"
+          ]
+        })
+        expect(subject.expression_form_values).to eq({
+          property: "plan",
+          operator: "eq",
+          value: "basic"
+        })
+      end
+    end
+  end
 end
