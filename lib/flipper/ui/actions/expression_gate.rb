@@ -39,6 +39,15 @@ module Flipper
         private
 
         def parse_expression_params
+          # Check if this is a complex expression (any/all)
+          if params['complex_expression_type']
+            parse_complex_expression_params
+          else
+            parse_simple_expression_params
+          end
+        end
+
+        def parse_simple_expression_params
           property = params['expression_property'].to_s.strip
           operator = params['expression_operator'].to_s.strip
           value = params['expression_value'].to_s.strip
@@ -65,6 +74,53 @@ module Flipper
               parsed_value
             ]
           }
+        end
+
+        def parse_complex_expression_params
+          complex_type = params['complex_expression_type'].to_s.strip
+          complex_expressions = params['complex_expressions'] || {}
+
+          # Build array of simple expressions
+          expressions = []
+          complex_expressions.each do |index, expression_data|
+            property = expression_data['property'].to_s.strip
+            operator = expression_data['operator'].to_s.strip
+            value = expression_data['value'].to_s.strip
+
+            next if property.empty? || operator.empty? || value.empty?
+
+            # Convert value to appropriate type
+            property_type = property_type_for(property)
+            parsed_value = case property_type
+            when 'boolean'
+              value == 'true'
+            when 'number'
+              value.include?('.') ? value.to_f : value.to_i
+            else
+              value
+            end
+
+            # Map operator to expression type
+            expression_type = OPERATOR_MAPPING[operator]
+
+            # Build individual expression
+            expressions << {
+              expression_type => [
+                { "Property" => [property] },
+                parsed_value
+              ]
+            }
+          end
+
+          # Build complex expression hash
+          case complex_type
+          when 'any'
+            { "Any" => expressions }
+          when 'all'
+            { "All" => expressions }
+          else
+            raise "Unknown complex expression type: #{complex_type}"
+          end
         end
 
         def property_type_for(property_name)
