@@ -104,45 +104,106 @@ module Flipper
 
         # Public: Get human-readable summary of the expression.
         def expression_summary
-          result = nil
-          parse_simple_expression do |property_name, operator, value_part|
-            operator_text = format_operator(operator)
-            result = "#{property_name} #{operator_text} #{format_value(value_part)}"
+          case expression_type
+          when :simple
+            parse_simple_expression do |property_name, operator, value_part|
+              operator_text = format_operator(operator)
+              return "#{property_name} #{operator_text} #{format_value(value_part)}"
+            end
+          when :complex_any
+            count = complex_expression_condition_count
+            return "any #{count} condition#{'s' if count != 1}"
+          when :complex_all
+            count = complex_expression_condition_count
+            return "all #{count} condition#{'s' if count != 1}"
+          else
+            return "none"
           end
-
-          return result if result
-          return "none" unless has_expression?
-          "complex expression"
         end
 
         # Public: Get detailed human-readable description of the expression.
         def expression_description
-          result = nil
-          parse_simple_expression do |property_name, operator, value_part|
-            operator_text = format_operator_verbose(operator)
-            result = "#{property_name} #{operator_text} #{format_value(value_part)}"
+          case expression_type
+          when :simple
+            parse_simple_expression do |property_name, operator, value_part|
+              operator_text = format_operator_verbose(operator)
+              return "#{property_name} #{operator_text} #{format_value(value_part)}"
+            end
+          when :complex_any
+            count = complex_expression_condition_count
+            return "any #{count} condition#{'s' if count != 1}"
+          when :complex_all
+            count = complex_expression_condition_count
+            return "all #{count} condition#{'s' if count != 1}"
+          when :none
+            return "No expression set"
+          else
+            return "Invalid expression format"
           end
-
-          return result if result
-          return "No expression set" unless has_expression?
-          expr_value = feature.expression_value
-          return "Invalid expression format" unless expr_value.is_a?(Hash)
-          "Complex expression - #{expr_value.inspect}"
         end
 
         # Public: Extract form values from current expression for editing.
-        # Returns hash with property, operator, and value, or empty hash for complex expressions.
+        # Returns hash with type and expression data based on expression type.
         def expression_form_values
-          parse_simple_expression do |property_name, operator, value_part|
-            form_operator = map_expression_operator_to_form(operator)
-            return {
-              property: property_name,
-              operator: form_operator,
-              value: value_part.to_s
-            }
+          case expression_type
+          when :simple
+            parse_simple_expression do |property_name, operator, value_part|
+              form_operator = map_expression_operator_to_form(operator)
+              return {
+                type: "property",
+                property: property_name,
+                operator: form_operator,
+                value: value_part.to_s
+              }
+            end
+          when :complex_any, :complex_all
+            return complex_expression_form_values
+          else
+            return { type: "property" }
+          end
+        end
+
+        # Public: Extract complex expression form values for editing.
+        def complex_expression_form_values
+          type = expression_type == :complex_any ? "any" : "all"
+          expressions = []
+
+          parse_complex_expression do |operator, conditions|
+            conditions.each do |condition|
+              if condition.is_a?(Hash)
+                condition.each do |cond_operator, cond_args|
+                  next unless cond_args.is_a?(Array) && cond_args.length == 2
+
+                  property_part = cond_args[0]
+                  value_part = cond_args[1]
+
+                  if property_part.is_a?(Hash) && property_part.has_key?("Property")
+                    property_name = property_part["Property"]&.first
+                    if property_name && !value_part.nil?
+                      form_operator = map_expression_operator_to_form(cond_operator)
+                      expressions << {
+                        property: property_name,
+                        operator: form_operator,
+                        value: value_part.to_s
+                      }
+                    end
+                  end
+                end
+              end
+            end
           end
 
-          {}
+          {
+            type: type,
+            expressions: expressions
+          }
+        end
+
+        # Public: Get complete form initialization data for JavaScript.
+        def expression_form_data
+          data = expression_form_values
+          data[:has_expression] = has_expression?
+          data
         end
 
         private
@@ -169,6 +230,47 @@ module Flipper
               end
             end
           end
+        end
+
+        # Parse complex expression and yield operator type and conditions array if found.
+        def parse_complex_expression
+          return unless has_expression?
+
+          expr_value = feature.expression_value
+          return unless expr_value.is_a?(Hash)
+
+          # Handle complex expressions like {"Any": [...]} or {"All": [...]}
+          %w[Any All].each do |operator|
+            if expr_value.has_key?(operator) && expr_value[operator].is_a?(Array)
+              yield operator, expr_value[operator]
+              return
+            end
+          end
+        end
+
+        # Determine the type of expression: :simple, :complex_any, :complex_all, or :none
+        def expression_type
+          return :none unless has_expression?
+
+          # Check for simple expression first
+          parse_simple_expression do |property_name, operator, value_part|
+            return :simple
+          end
+
+          # Check for complex expression
+          parse_complex_expression do |operator, conditions|
+            return operator == "Any" ? :complex_any : :complex_all
+          end
+
+          :none
+        end
+
+        # Count number of conditions in complex expression
+        def complex_expression_condition_count
+          parse_complex_expression do |operator, conditions|
+            return conditions.length
+          end
+          0
         end
 
         def format_operator(operator)

@@ -282,13 +282,13 @@
               <div class="row mb-3">
                 <div class="col">
                   <div class="btn-group" role="group" aria-label="Expression type">
-                    <input type="radio" class="btn-check" name="expression_type" id="type-property" value="property" autocomplete="off" <%= "checked" if @feature.expression_form_values[:property] || !@feature.has_expression? %>>
+                    <input type="radio" class="btn-check" name="expression_type" id="type-property" value="property" autocomplete="off" <%= "checked" if @feature.expression_form_data[:type] == "property" %>>
                     <label class="btn btn-light" for="type-property">Property</label>
 
-                    <input type="radio" class="btn-check" name="expression_type" id="type-any" value="any" autocomplete="off">
+                    <input type="radio" class="btn-check" name="expression_type" id="type-any" value="any" autocomplete="off" <%= "checked" if @feature.expression_form_data[:type] == "any" %>>
                     <label class="btn btn-light" for="type-any">Any</label>
 
-                    <input type="radio" class="btn-check" name="expression_type" id="type-all" value="all" autocomplete="off">
+                    <input type="radio" class="btn-check" name="expression_type" id="type-all" value="all" autocomplete="off" <%= "checked" if @feature.expression_form_data[:type] == "all" %>>
                     <label class="btn btn-light" for="type-all">All</label>
                   </div>
                 </div>
@@ -315,32 +315,32 @@
                 <input type="hidden" name="operation" value="enable">
 
                 <!-- Simple Property Expression Form -->
-                <div id="simple-expression-form" class="<%= 'd-none' unless @feature.expression_form_values[:property] %>">
+                <div id="simple-expression-form" class="<%= 'd-none' unless @feature.expression_form_data[:type] == 'property' %>">
                   <div class="row mb-3">
                     <div class="col-md-4">
                       <select name="expression_property" class="form-select">
                         <option value="">Select a property...</option>
                         <% Flipper::UI.expression_properties.each do |property, config| %>
-                          <option value="<%= property %>" <%= "selected" if @feature.expression_form_values[:property] == property.to_s %>><%= property %></option>
+                          <option value="<%= property %>" <%= "selected" if @feature.expression_form_data[:property] == property.to_s %>><%= property %></option>
                         <% end %>
-                        <% if @feature.expression_form_values[:property] && !Flipper::UI.expression_properties.has_key?(@feature.expression_form_values[:property].to_sym) %>
-                          <option value="<%= @feature.expression_form_values[:property] %>" selected><%= @feature.expression_form_values[:property] %> (no longer available)</option>
+                        <% if @feature.expression_form_data[:property] && !Flipper::UI.expression_properties.has_key?(@feature.expression_form_data[:property].to_sym) %>
+                          <option value="<%= @feature.expression_form_data[:property] %>" selected><%= @feature.expression_form_data[:property] %> (no longer available)</option>
                         <% end %>
                       </select>
                     </div>
                     <div class="col-md-3">
                       <select name="expression_operator" class="form-select">
                         <option value="">Select an operator...</option>
-                        <option value="eq" <%= "selected" if @feature.expression_form_values[:operator] == "eq" %>>equals (=)</option>
-                        <option value="ne" <%= "selected" if @feature.expression_form_values[:operator] == "ne" %>>not equal (≠)</option>
-                        <option value="gt" <%= "selected" if @feature.expression_form_values[:operator] == "gt" %>>greater than (>)</option>
-                        <option value="gte" <%= "selected" if @feature.expression_form_values[:operator] == "gte" %>>greater than or equal (≥)</option>
-                        <option value="lt" <%= "selected" if @feature.expression_form_values[:operator] == "lt" %>>less than (<)</option>
-                        <option value="lte" <%= "selected" if @feature.expression_form_values[:operator] == "lte" %>>less than or equal (≤)</option>
+                        <option value="eq" <%= "selected" if @feature.expression_form_data[:operator] == "eq" %>>equals (=)</option>
+                        <option value="ne" <%= "selected" if @feature.expression_form_data[:operator] == "ne" %>>not equal (≠)</option>
+                        <option value="gt" <%= "selected" if @feature.expression_form_data[:operator] == "gt" %>>greater than (>)</option>
+                        <option value="gte" <%= "selected" if @feature.expression_form_data[:operator] == "gte" %>>greater than or equal (≥)</option>
+                        <option value="lt" <%= "selected" if @feature.expression_form_data[:operator] == "lt" %>>less than (<)</option>
+                        <option value="lte" <%= "selected" if @feature.expression_form_data[:operator] == "lte" %>>less than or equal (≤)</option>
                       </select>
                     </div>
                     <div class="col-md-3">
-                      <input type="text" name="expression_value" placeholder="value" class="form-control" value="<%= @feature.expression_form_values[:value] %>">
+                      <input type="text" name="expression_value" placeholder="value" class="form-control" value="<%= @feature.expression_form_data[:value] %>">
                     </div>
                     <div class="col-auto ms-auto">
                       <button type="button" class="btn btn-outline-danger remove-expression-btn" disabled>Remove</button>
@@ -349,7 +349,7 @@
                 </div>
 
                 <!-- Complex Expression Form -->
-                <div id="complex-expression-form" class="d-none">
+                <div id="complex-expression-form" class="<%= 'd-none' unless @feature.expression_form_data[:type] == 'any' || @feature.expression_form_data[:type] == 'all' %>">
                   <div class="row">
                     <div class="col">
                       <div id="expression-list">
@@ -358,6 +358,11 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Expression form initialization data -->
+                <script id="expression-form-data" type="application/json">
+                  <%== @feature.expression_form_data.to_json %>
+                </script>
 
                 <div class="row">
                   <div class="col-auto ms-auto">

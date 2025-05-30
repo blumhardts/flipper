@@ -91,9 +91,9 @@ RSpec.describe Flipper::UI::Decorators::Feature do
       expect(subject.expression_summary).to eq("age ≥ 21")
     end
 
-    it 'returns "complex expression" for unsupported formats' do
+    it 'returns "Any of 0 conditions" for empty Any expression' do
       allow(feature).to receive(:expression_value).and_return({"Any" => []})
-      expect(subject.expression_summary).to eq("complex expression")
+      expect(subject.expression_summary).to eq("Any of 0 conditions")
     end
   end
 
@@ -174,8 +174,8 @@ RSpec.describe Flipper::UI::Decorators::Feature do
 
   describe '#expression_form_values' do
     context 'when no expression is set' do
-      it 'returns empty hash' do
-        expect(subject.expression_form_values).to eq({})
+      it 'returns default property type' do
+        expect(subject.expression_form_values).to eq({ type: "property" })
       end
     end
 
@@ -184,6 +184,7 @@ RSpec.describe Flipper::UI::Decorators::Feature do
         expression = Flipper.property(:user_id).eq("123")
         feature.enable_expression(expression)
         expect(subject.expression_form_values).to eq({
+          type: "property",
           property: "user_id",
           operator: "eq",
           value: "123"
@@ -194,6 +195,7 @@ RSpec.describe Flipper::UI::Decorators::Feature do
         expression = Flipper.property(:plan).neq("premium")
         feature.enable_expression(expression)
         expect(subject.expression_form_values).to eq({
+          type: "property",
           property: "plan",
           operator: "ne",
           value: "premium"
@@ -204,6 +206,7 @@ RSpec.describe Flipper::UI::Decorators::Feature do
         expression = Flipper.property(:age).gt(21)
         feature.enable_expression(expression)
         expect(subject.expression_form_values).to eq({
+          type: "property",
           property: "age",
           operator: "gt",
           value: "21"
@@ -214,6 +217,7 @@ RSpec.describe Flipper::UI::Decorators::Feature do
         expression = Flipper.property(:score).gte(100)
         feature.enable_expression(expression)
         expect(subject.expression_form_values).to eq({
+          type: "property",
           property: "score",
           operator: "gte",
           value: "100"
@@ -224,6 +228,7 @@ RSpec.describe Flipper::UI::Decorators::Feature do
         expression = Flipper.property(:count).lt(5)
         feature.enable_expression(expression)
         expect(subject.expression_form_values).to eq({
+          type: "property",
           property: "count",
           operator: "lt",
           value: "5"
@@ -234,6 +239,7 @@ RSpec.describe Flipper::UI::Decorators::Feature do
         expression = Flipper.property(:limit).lte(10)
         feature.enable_expression(expression)
         expect(subject.expression_form_values).to eq({
+          type: "property",
           property: "limit",
           operator: "lte",
           value: "10"
@@ -244,6 +250,7 @@ RSpec.describe Flipper::UI::Decorators::Feature do
         expression = Flipper.property(:premium).eq(true)
         feature.enable_expression(expression)
         expect(subject.expression_form_values).to eq({
+          type: "property",
           property: "premium",
           operator: "eq",
           value: "true"
@@ -254,6 +261,7 @@ RSpec.describe Flipper::UI::Decorators::Feature do
         expression = Flipper.property(:premium).eq(false)
         feature.enable_expression(expression)
         expect(subject.expression_form_values).to eq({
+          type: "property",
           property: "premium",
           operator: "eq",
           value: "false"
@@ -264,6 +272,7 @@ RSpec.describe Flipper::UI::Decorators::Feature do
         expression = Flipper.property(:rating).gt(4.5)
         feature.enable_expression(expression)
         expect(subject.expression_form_values).to eq({
+          type: "property",
           property: "rating",
           operator: "gt",
           value: "4.5"
@@ -272,46 +281,58 @@ RSpec.describe Flipper::UI::Decorators::Feature do
     end
 
     context 'when complex expression is set' do
-      it 'returns empty hash for Any expression' do
+      it 'returns complex form data for Any expression' do
         expression = Flipper.any([
           Flipper.property(:user_id).eq("123"),
           Flipper.property(:premium).eq(true)
         ])
         feature.enable_expression(expression)
-        expect(subject.expression_form_values).to eq({})
+        expect(subject.expression_form_values).to eq({
+          type: "any",
+          expressions: [
+            { property: "user_id", operator: "eq", value: "123" },
+            { property: "premium", operator: "eq", value: "true" }
+          ]
+        })
       end
 
-      it 'returns empty hash for All expression' do
+      it 'returns complex form data for All expression' do
         expression = Flipper.all([
           Flipper.property(:age).gte(21),
           Flipper.property(:country).eq("US")
         ])
         feature.enable_expression(expression)
-        expect(subject.expression_form_values).to eq({})
+        expect(subject.expression_form_values).to eq({
+          type: "all",
+          expressions: [
+            { property: "age", operator: "gte", value: "21" },
+            { property: "country", operator: "eq", value: "US" }
+          ]
+        })
       end
     end
 
     context 'when expression has invalid format' do
-      it 'returns empty hash for non-hash expression value' do
+      it 'returns default property type for non-hash expression value' do
         allow(feature).to receive(:expression_value).and_return("invalid")
-        expect(subject.expression_form_values).to eq({})
+        expect(subject.expression_form_values).to eq({ type: "property" })
       end
 
-      it 'returns empty hash for malformed expression structure' do
+      it 'returns default property type for malformed expression structure' do
         allow(feature).to receive(:expression_value).and_return({
           "Equal" => ["not_array_of_two"]
         })
-        expect(subject.expression_form_values).to eq({})
+        expect(subject.expression_form_values).to eq({ type: "property" })
       end
 
-      it 'returns empty hash for expression without Property key' do
+      it 'returns default property type for expression without Property key' do
         allow(feature).to receive(:expression_value).and_return({
           "Equal" => [
             { "NotProperty" => ["plan"] },
             "basic"
           ]
         })
-        expect(subject.expression_form_values).to eq({})
+        expect(subject.expression_form_values).to eq({ type: "property" })
       end
     end
 
@@ -324,6 +345,7 @@ RSpec.describe Flipper::UI::Decorators::Feature do
           ]
         })
         expect(subject.expression_form_values).to eq({
+          type: "property",
           property: "plan",
           operator: "eq",
           value: "basic"
