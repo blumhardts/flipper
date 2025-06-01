@@ -105,7 +105,7 @@ module Flipper
         def convert_value_to_type(value, property)
           property_type = property_type_for(property)
 
-          case property_type
+          case property_type.to_s
           when 'boolean'
             value == 'true'
           when 'number'
