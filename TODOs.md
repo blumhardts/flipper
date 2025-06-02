@@ -1,0 +1,6 @@
+- Property input when adding a new expression to Any or All does not display "Select a property..." text
+- "Add an expression" button should have a tooltip when disabled and enabled
+- "Remove" button on expressions should have a tooltip when disabled and enabled
+- Clean up code to be less clunky (https://ampcode.com/threads/T-99343bef-2910-4feb-8820-8dad5e53b7b7)
+- Nested Any and All support
+- Fix "equals" and "not equals" text in language version of operators to be "is equal to" and "is not equal to" ("actors with client version does not equal 123" does not read as nicely as "actors where client version is not equal to 123" or "actors where any 2 conditions are met")
